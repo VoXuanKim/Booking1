@@ -12,5 +12,7 @@ public interface ResourceService {
 
     void deleteById(int id);
 
+    public Optional<ResourceEntity> findById(int id);
+
     public Optional<ResourceEntity> findResourcebyId(int id);
 }

@@ -24,21 +24,48 @@ public class ResourcesServiceImpl implements ResourceService {
 
     @Override
     public void updateById(int id, ResourceEntity resource) {
-        Optional<ResourceEntity> existingResourcesOtp = resourceRepository.findById(id);
-        if (existingResourcesOtp.isPresent() && !existingResourcesOtp.get().isDeleted()) {
-            ResourceEntity existingResource = existingResourcesOtp.get();
-            existingResource.setResourcesName(resource.getResourcesName() != null ? resource.getResourcesName() : existingResource.getResourcesName() );
-            existingResource.setResourcesDescription(resource.getResourcesDescription() != null ? resource.getResourcesDescription() : existingResource.getResourcesDescription());
-            existingResource.setResourcesPrice(resource.getResourcesPrice() != null ? resource.getResourcesPrice() : existingResource.getResourcesPrice());
-            existingResource.setResourcesCapacity(resource.getResourcesCapacity() != null ? resource.getResourcesCapacity() : existingResource.getResourcesCapacity());
-            existingResource.setResourcesPhoto(resource.getResourcesPhoto() != null ? resource.getResourcesPhoto() : existingResource.getResourcesPhoto());
+        Optional<ResourceEntity> existingResourceOpt = findById(id);
+        if (existingResourceOpt.isPresent() && !existingResourceOpt.get().isDeleted()) {
+            ResourceEntity existingResource = existingResourceOpt.get();
+            updateResourceFields(existingResource, resource);
+            save(existingResource);
+        }
+    }
 
-            existingResource.setCategoryEntity(categoryRepository.getById(resource.getCategoryEntity().getCategoryId()));
 
-            if (resource.getResourceStatusEnum() != null) {
-                existingResource.setResourceStatusEnum(resource.getResourceStatusEnum());
-            }
-            resourceRepository.save(existingResource);
+    public Optional<ResourceEntity> findById(int id) {
+        return resourceRepository.findById(id);
+    }
+
+    // Method to handle updating fields of the resource
+    private void updateResourceFields(ResourceEntity existingResource, ResourceEntity resource) {
+        updateBasicFields(existingResource, resource);
+        updateCategory(existingResource, resource);
+        updateStatus(existingResource, resource);
+    }
+
+    // Sub-method for updating basic fields
+    private void updateBasicFields(ResourceEntity existingResource, ResourceEntity resource) {
+        existingResource.setResourcesName(resource.getResourcesName() != null ? resource.getResourcesName() : existingResource.getResourcesName());
+        existingResource.setResourcesDescription(resource.getResourcesDescription() != null ? resource.getResourcesDescription() : existingResource.getResourcesDescription());
+        existingResource.setResourcesPrice(resource.getResourcesPrice() != null ? resource.getResourcesPrice() : existingResource.getResourcesPrice());
+        existingResource.setResourcesCapacity(resource.getResourcesCapacity() != null ? resource.getResourcesCapacity() : existingResource.getResourcesCapacity());
+        existingResource.setResourcesPhoto(resource.getResourcesPhoto() != null ? resource.getResourcesPhoto() : existingResource.getResourcesPhoto());
+    }
+    // Method for updating the category entity if present
+    private void updateCategory(ResourceEntity existingResource, ResourceEntity resource) {
+        if (resource.getCategoryEntity() != null) {
+            existingResource.setCategoryEntity(
+                    categoryRepository.getById(resource.getCategoryEntity().getCategoryId())
+            );
+        }
+    }
+
+
+    // Method for updating the resource status if present
+    private void updateStatus(ResourceEntity existingResource, ResourceEntity resource) {
+        if (resource.getResourceStatusEnum() != null) {
+            existingResource.setResourceStatusEnum(resource.getResourceStatusEnum());
         }
     }
 
